@@ -6,4 +6,23 @@
 
 No ambiente local (Linux), construir uma pequena aplicação distribuída (linguagem C), que descobre o maior e o menor valor em um vetor de 10 posições.
 
+## Rodando
+
+Para rodar basta utilizar o comando 
+```
+make all
+```
+
+e em seguida o 
+```
+make run
+```
+
+Se precisar use 
+```
+make clean
+``` 
+
+Para limpar a pasta.
+
  
