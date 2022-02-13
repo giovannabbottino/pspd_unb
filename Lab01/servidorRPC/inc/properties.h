@@ -9,12 +9,13 @@
 #include <strings.h> /* bzero() */
 #include <ctype.h> /* isdigit*/
 #include <unistd.h>  /* fork() */
+#include <errno.h> /* errno */
 #include <math.h> /* sqrt() e pow() */
 
 #define HOST "127.0.0.1"
-#define PORT 5055
+#define PORT 5063
 
 #define VETOR 10
-#define PDU 10
+#define PDU 2000
 
 #endif

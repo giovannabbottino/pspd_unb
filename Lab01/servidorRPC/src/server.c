@@ -7,8 +7,8 @@
 int main(int argc, char *argv[]){
 	int server, client;
 	socklen_t client_size;
-	float client_message[VETOR], menor = 0, maior = 0;
-	float receive_message[PDU], send_message[2];
+	float menor = 0, maior = 0, client_number;
+	char receive_message[PDU], send_message[PDU];
 	pid_t process_id; /*Process Identification*/
 
 	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
@@ -52,28 +52,35 @@ int main(int argc, char *argv[]){
 	printf("[SERVER] Aceita conexoes direta\n");
 
 	printf("[SERVER] Esperando por dados no IP: %s, porta TCP numero: %d\n", HOST, PORT);
-
+	int retorno_msg;
 	/* Receber a mensagem */
 	while(1){
 		bzero(receive_message, PDU); /* apaga a informacao*/
-		if (recv(client, receive_message, PDU, 0) < 0){
+		
+		retorno_msg = recv(client, receive_message, PDU, 0);
+		
+		if(retorno_msg == 0 || errno == 104){
+			printf("[SERVER] Conexão Encerrada!\n");
+			close(client);
+			exit(0);
+		}else if (retorno_msg < 0){
 			perror("[SERVER] Não foi possivel receber a mensagem");
 		} else{
 			printf("[SERVER] Recebida a mensagem\n");
 
 			/* para responder */
-			
-			for (int i=0; i<VETOR; i++){
-				if (receive_message[i] > maior){
-					maior = receive_message[i];
-				}
-				if (receive_message[i] > menor){
-					menor = receive_message[i];
-				}
+			bzero(send_message, PDU); /* apaga a informacao*/
+
+			client_number = atof(receive_message);
+			if (maior <= client_number){
+				maior = client_number;
+				gcvt(maior, 10, send_message);
+			}
+			if (menor >= client_number){
+				menor = client_number;
+				gcvt(menor, 10, send_message);
 			}
 
-			send_message[0] = menor;
-			send_message[1] = maior;
 			if (send(client, send_message, sizeof(send_message) + 1, 0) < 0){
 				perror("[SERVER] Não foi possivel responder a mensagem");
 			}

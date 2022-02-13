@@ -9,18 +9,20 @@ int main(int argc, char *argv[]) {
 	int client;
 	struct sockaddr_in server_address; /* socket do servidor */
 	pid_t process_id; /*Process Identification*/
-	float server_message[PDU], receive_message[PDU], send_message[PDU];
-	float vetor[VETOR], menor = 0, maior = 0;
+	char server_message[PDU], receive_message[PDU], send_message[PDU];
+	float vetor[VETOR], menor = 0, maior = 0, server_number;
+	int count_correct_number = 0;
 	
 	/* Cria e descobre o menor e maior valor*/
 	for (int i=0; i<VETOR; i++){
-		send_message[i] = pow((i - VETOR / 2), 2);
-		send_message[i] = sqrt(send_message[i]);
-		if (send_message[i] > maior){
-			maior = send_message[i];
+		vetor[i] = pow((i - VETOR / 2), 2);
+		vetor[i] = sqrt(vetor[i]);
+
+		if (vetor[i] >= maior){
+			maior = vetor[i];
 		}
-		if (send_message[i] > menor){
-			menor = send_message[i];
+		if (vetor[i] <= menor){
+			menor = vetor[i];
 		}
 	}
 
@@ -53,33 +55,35 @@ int main(int argc, char *argv[]) {
 	printf("[CLIENT] Conectado no IP: %s, porta TCP numero: %d\n", HOST, PORT);
 	
 	/* Verifica se mensagem foi enviada */
-	int counter=0;
-	while(1){
-		bzero(server_message, PDU); /* apaga a informacao*/
+	for (int i=0; i<VETOR; i++){
+		bzero(send_message, PDU); /* apaga a informacao*/
+
+		if (count_correct_number >= 2 || i == VETOR - 1){
+			close(client);
+			exit(0);
+		} else {
+			gcvt(vetor[i], 10, send_message);
+		}
+
 		if(send(client, send_message, sizeof(send_message), 0) < 0){
 			perror("[CLIENT] Falha no envio");
 		} else{
 			printf("[CLIENT] Mensagem enviada\n");
 		}
 
+		bzero(server_message, PDU); /* apaga a informacao*/
 		if(recv(client, server_message, sizeof(server_message), 0) < 0){
 			perror("[CLIENT] Falha ao receber resposta");
 		}
 
-		if (menor == server_message[0] && server_message[1]){
-			if (maior == server_message[0]){
-				printf("[CLIENT] Menor valor recebido está correto: %f\n",server_message[0]);
-			}
-			if (maior == server_message[1]){
-				printf("[CLIENT] Maior valor recebido está correto: %f\n",server_message[1]);
-			}
-			exit(0);	
+		server_number = atof(server_message);
+		if (maior == server_number){
+			printf("[CLIENT] Maior valor recebido está correto: %f\n",server_number);
+			count_correct_number++;
 		}
-
-		if (counter>=3){
-			perror("[CLIENT] Mensagem não pode ser enviada");
-			printf("[CLIENT] Mensagem cancelada\n");
-			break;
+		if (menor == server_number){
+			printf("[CLIENT] Menor valor recebido está correto: %f\n",server_number);
+			count_correct_number++;
 		}
 	}
 }
