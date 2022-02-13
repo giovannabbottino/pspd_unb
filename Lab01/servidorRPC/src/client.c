@@ -8,7 +8,6 @@
 int main(int argc, char *argv[]) {
 	int client;
 	struct sockaddr_in server_address; /* socket do servidor */
-	pid_t process_id; /*Process Identification*/
 	char server_message[PDU], receive_message[PDU], send_message[PDU];
 	float vetor[VETOR], menor = 0, maior = 0, server_number;
 	int count_correct_number = 0;

@@ -6,7 +6,7 @@
 
 No ambiente local (Linux), construir uma pequena aplicação distribuída (linguagem C), que descobre o maior e o menor valor em um vetor de 10 posições.
 
-## Rodando
+### Rodando
 
 Para rodar basta utilizar o comando 
 ```
