@@ -13,7 +13,7 @@
 #include <math.h> /* sqrt() e pow() */
 
 #define HOST "127.0.0.1"
-#define PORT 5063
+#define PORT 5050
 
 #define VETOR 10
 #define PDU 2000
