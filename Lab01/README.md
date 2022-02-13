@@ -6,7 +6,11 @@
 
 No ambiente local (Linux), construir uma pequena aplicação distribuída (linguagem C), que descobre o maior e o menor valor em um vetor de 10 posições.
 
-### Rodando
+## Versão com dois workers (função instanciada em dois servidores RPC) 
+
+Nesse versão, a aplicação deve ser construída, de modo que o cliente faça a solicitação envolvendo pelo menos dois servidores (workers)
+
+## Rodando
 
 Para rodar basta utilizar o comando 
 ```
