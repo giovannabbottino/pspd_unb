@@ -1,6 +1,3 @@
-args = $(foreach a,$($(subst -,_,$1)_args),$(if $(value $a),$a="$($a)"))
-serve_args = port
-
 all:
 	mkdir -p bin/
 	gcc src/server.c -o bin/server -I./inc
@@ -9,12 +6,25 @@ all:
 clean:
 	rm -rf bin/
 
-run2:
-	bin/server $(port1) & bin/server $(port2) & bin/client $(qtServer) $(port1) $(port2)
-server2:
-	make run2 port1=5065 port2=5075 qtServer=2
+server :=  $(foreach wrd,$(port),bin/server $(wrd) &) 
 
 run:
-	bin/server $(port1) & bin/client $(qtServer) $(port1)
-server:
-	make run port1=5065  qtServer=1
+	$(server) bin/client $(qtServer) $(port)
+
+worker:
+	make run qtServer=1 port="5005"
+
+worker2:
+	make run qtServer=2 port="5005 5015"
+
+worker4:
+	make run qtServer=4 port="5005 5015 5025 5035"
+
+worker6:
+	make run qtServer=6 port="5005 5015 5025 5035 5045 5055"
+
+worker8:
+	make run qtServer=8 port="5005 5015 5025 5035 5045 5055 5065 5075"
+
+worker10:
+	make run qtServer=10 port="5005 5015 5025 5035 5045 5055 5065 5075 5085 5095"
