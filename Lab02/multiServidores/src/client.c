@@ -46,7 +46,7 @@ void comunicacao_client_server(int client, int porta){
 		if(send(client, &vetor, VETOR * sizeof(float), 0) < 0){
 			perror("[CLIENT] Falha no envio");
 		} else{
-			printf("[CLIENT %d] Mensagem enviada\n", porta );
+			printf("[CLIENT %d] Mensagem enviada, maior: %f, menor: %f\n", porta, maior, menor );
 		}
 
 		if(recv(client, &receive_message, 2 * sizeof(float), 0) < 0){
