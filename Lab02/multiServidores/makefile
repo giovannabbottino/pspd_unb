@@ -6,12 +6,15 @@ all:
 	gcc src/server.c -o bin/server -I./inc
 	gcc src/client.c -o bin/client -I./inc -lm
 
-run:
-	bin/server $(port1) & bin/server $(port2) & bin/client $(qtServer) $(port1) $(port2)
 clean:
 	rm -rf bin/
-server2: 
-	make clean
-	make all 
-	make run qtServer=2 port1=5050 port2=5055
 
+run2:
+	bin/server $(port1) & bin/server $(port2) & bin/client $(qtServer) $(port1) $(port2)
+server2:
+	make run2 port1=5065 port2=5075 qtServer=2
+
+run:
+	bin/server $(port1) & bin/client $(qtServer) $(port1)
+server:
+	make run port1=5065  qtServer=1

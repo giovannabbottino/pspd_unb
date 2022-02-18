@@ -19,7 +19,7 @@ int conecta_client(int porta){
 		perror("[CLIENT] Criação do socket falhou");
 		exit(0);
 	}
-	printf("[CLIENT] Criacao do socket TCP\n");
+	printf("[CLIENT %d] Criacao do socket TCP\n", porta);
 
 	struct sockaddr_in server; /* socket do servidor */
 
@@ -33,20 +33,20 @@ int conecta_client(int porta){
 		perror("[CLIENT] Não pode conectar no Socket");
 		exit(0);
 	}
-	printf("[CLIENT] Inicia a conexão no socket\n");
+	printf("[CLIENT %d] Inicia a conexão no socket\n", porta);
 
-	printf("[CLIENT] Conectado no IP: %s, porta TCP numero: %d\n", HOST, porta);
+	printf("[CLIENT %d] Conectado no IP: %s, porta TCP numero: %d\n", porta, HOST, porta);
 
 	return client;
 }
 
-void comunicacao_client_server(int client){
+void comunicacao_client_server(int client, int porta){
 	/* Verifica se mensagem foi enviada */
 	while(1){
 		if(send(client, &vetor, VETOR * sizeof(float), 0) < 0){
 			perror("[CLIENT] Falha no envio");
 		} else{
-			printf("[CLIENT] Mensagem enviada\n");
+			printf("[CLIENT %d] Mensagem enviada\n", porta );
 		}
 
 		if(recv(client, &receive_message, 2 * sizeof(float), 0) < 0){
@@ -54,8 +54,8 @@ void comunicacao_client_server(int client){
 		}
 
 		if (menor == receive_message[0] && maior == receive_message[1]){
-			printf("[CLIENT] Menor valor recebido está correto: %f\n", receive_message[0]);
-			printf("[CLIENT] Maior valor recebido está correto: %f\n", receive_message[1]);
+			printf("[CLIENT %d] Menor valor recebido está correto: %f\n", porta, receive_message[0]);
+			printf("[CLIENT %d] Maior valor recebido está correto: %f\n", porta, receive_message[1]);
 			close(client);
 			exit(0);
 		}
@@ -65,8 +65,6 @@ void comunicacao_client_server(int client){
 int main(int argc, char *argv[]) {
 	int client;
 	int qtServer;
-	pid_t process_id; /*Process Identification*/
-
 
 	/* Cria e descobre o menor e maior valor*/
 	for (int i=0; i<VETOR; i++){
@@ -96,6 +94,7 @@ int main(int argc, char *argv[]) {
     printf("[CLIENT] Verifica se a quantidade de servers é um número\n");
 
 	qtServer = atoi(argv[1]); 
+	printf("[CLIENT] Quantidade de server escolhidos: %d\n", qtServer);
 
 	/* Verifica se a quantidade de portas foi enviado pelo argc  */
 	if (argc<qtServer+2) {
@@ -111,22 +110,15 @@ int main(int argc, char *argv[]) {
 			perror("[CLIENT] A porta deve ser um número");
 			exit(0);
 		}
-		printf("[CLIENT] Verifica se a porta é um número\n");
-		portas[i] = atoi(argv[i + 2]);
+		printf("[CLIENT] Verifica se a porta %d é um número\n", atoi(argv[i+2]));
+		portas[i] = atoi(argv[i+2]);
 	}
 
-	
-	for (int i=0; i<qtServer/2; i++){
+	for(int i=0; i<qtServer; i++){
 		/*Fork para criar um novo processo*/
-		process_id=fork();
-		if(process_id==0){
+		if(fork() == 0){
 			client = conecta_client(portas[i]);
-			comunicacao_client_server(client);
-		} else{
-			client = conecta_client(portas[i+2]);
-			comunicacao_client_server(client);
-		}
+			comunicacao_client_server(client, portas[i]);
+		} 
 	}
-
-	return 0;
 }

@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 
 	/* Conecta na porta */
 	if (bind(server, (struct sockaddr *)&server_address, sizeof(server_address))<0){
-		printf("[SERVER %d] Não pode fazer bind na porta PORT", porta);
+		printf("[SERVER %d] Não pode fazer bind na porta %d\n", porta, porta);
 		exit(0);
 	}
 	printf("[SERVER %d] Conecta na porta\n", porta);
