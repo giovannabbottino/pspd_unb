@@ -51,14 +51,14 @@ void comunicacao_client_server(int client, int porta){
 
 		if(recv(client, &receive_message, 2 * sizeof(float), 0) < 0){
 			perror("[CLIENT] Falha ao receber resposta");
-		}
-
-		printf("[CLIENT %d] Mensagem recebida [%f,%f]\n", porta, receive_message[0], receive_message[1]);
-		if (menor == receive_message[0] && maior == receive_message[1]){
-			printf("[CLIENT %d] Menor valor recebido está correto: %f\n", porta, receive_message[0]);
-			printf("[CLIENT %d] Maior valor recebido está correto: %f\n", porta, receive_message[1]);
-			close(client);
-			exit(0);
+		}else{
+			printf("[CLIENT %d] Mensagem recebida [%f,%f]\n", porta, receive_message[0], receive_message[1]);
+			if (menor == receive_message[0] && maior == receive_message[1]){
+				printf("[CLIENT %d] Menor valor recebido está correto: %f\n", porta, receive_message[0]);
+				printf("[CLIENT %d] Maior valor recebido está correto: %f\n", porta, receive_message[1]);
+				close(client);
+				exit(0);
+			}
 		}
 	}	
 }
