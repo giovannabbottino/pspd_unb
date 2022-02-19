@@ -6,6 +6,8 @@
 #include <properties.h> /* informacoes para rodar */
 
 float vetor[VETOR], menor = 0, maior = 0, receive_message[2];
+time_t rawtime;
+struct tm * timeinfo;
 
 int conecta_client(int porta){
 	/* Criacao do socket TCP */
@@ -33,7 +35,10 @@ int conecta_client(int porta){
 		perror("[CLIENT] Não pode conectar no Socket");
 		exit(0);
 	}
-	printf("[CLIENT %d] Inicia a conexão no socket\n", porta);
+	/* Para printar o tempo */
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+	printf("[CLIENT %d | %d:%d:%d ] Inicia a conexão no socket\n", porta, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
 	printf("[CLIENT %d] Conectado no IP: %s, porta TCP numero: %d\n", porta, HOST, porta);
 
@@ -46,16 +51,23 @@ void comunicacao_client_server(int client, int porta){
 		if(send(client, &vetor, VETOR * sizeof(float), 0) < 0){
 			perror("[CLIENT] Falha no envio");
 		} else{
-			printf("[CLIENT %d] Mensagem enviada, maior: %f, menor: %f\n", porta, maior, menor );
+			/* Para printar o tempo */
+			time ( &rawtime );
+			timeinfo = localtime ( &rawtime );
+			printf("[CLIENT %d | %d:%d:%d ] Mensagem enviada\n", porta, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 		}
 
 		if(recv(client, &receive_message, 2 * sizeof(float), 0) < 0){
 			perror("[CLIENT] Falha ao receber resposta");
 		}else{
-			printf("[CLIENT %d] Mensagem recebida [%f,%f]\n", porta, receive_message[0], receive_message[1]);
+			/* Para printar o tempo */
+			time ( &rawtime );
+			timeinfo = localtime ( &rawtime );
+			printf("[CLIENT %d | %d:%d:%d ] Mensagem recebida [%f,%f]\n", porta,timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, receive_message[0], receive_message[1]);
 			if (menor == receive_message[0] && maior == receive_message[1]){
 				printf("[CLIENT %d] Menor valor recebido está correto: %f\n", porta, receive_message[0]);
 				printf("[CLIENT %d] Maior valor recebido está correto: %f\n", porta, receive_message[1]);
+				printf("[CLIENT %d | %d:%d:%d ] Encerrando conexão\n", porta,timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 				close(client);
 				exit(0);
 			}
@@ -68,7 +80,7 @@ int main(int argc, char *argv[]) {
 	int qtServer;
 
 	/* Cria e descobre o menor e maior valor*/
-	for (int i=0; i<VETOR; i++){
+	for (int i=0; i<VETOR-1; i++){
 		vetor[i] = pow((i - VETOR / 2), 2);
 		vetor[i] = sqrt(vetor[i]);
 
@@ -85,14 +97,11 @@ int main(int argc, char *argv[]) {
 	  perror("[CLIENT] Digite a quantidade de servers");
 	  exit(0);       
     }
-    printf("[CLIENT] Verifica se a quantidade de servers foi enviada pelo argc\n");
-    
     /* Verifica se a quantidade de servers é um número */
     if (!isdigit(*argv[1])){
         perror("[CLIENT] A quantidade de servers deve ser um número");
 		exit(0);
     }
-    printf("[CLIENT] Verifica se a quantidade de servers é um número\n");
 
 	qtServer = atoi(argv[1]); 
 	printf("[CLIENT] Quantidade de server escolhidos: %d\n", qtServer);
@@ -102,7 +111,6 @@ int main(int argc, char *argv[]) {
 		perror("[CLIENT] Digite todas as portas");
 		exit(0);       
 	}
-	printf("[CLIENT] Verifica se a porta foi enviada pelo argc\n");
 	
 	int portas[qtServer];
 	for(int i=0; i<qtServer; i++){		
@@ -111,7 +119,6 @@ int main(int argc, char *argv[]) {
 			perror("[CLIENT] A porta deve ser um número");
 			exit(0);
 		}
-		printf("[CLIENT] Verifica se a porta %d é um número\n", atoi(argv[i+2]));
 		portas[i] = atoi(argv[i+2]);
 	}
 

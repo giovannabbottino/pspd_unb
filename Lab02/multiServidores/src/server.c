@@ -4,11 +4,17 @@
 */
 #include <properties.h>
 
+int cmpfunc (const void * a, const void * b) {
+   return ( *(float*)a - *(float*)b );
+}
+
 int main(int argc, char *argv[]){
 	int server, client;
 	socklen_t client_size;
-	float menor = 0, maior = 0, client_number;
-	float vetor[VETOR], send_message[2];
+	float menor = 0, maior = 0;
+	float vetor[VETOR] = {0}, send_message[2] = {0};
+	time_t rawtime;
+	struct tm * timeinfo;
 
 	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
 
@@ -17,14 +23,12 @@ int main(int argc, char *argv[]){
 	  printf("[SERVER] Digite a porta");
 	  exit(0);       
     }
-    printf("[SERVER] Verifica se a porta foi enviada pelo argc\n");
-    
+
     /* Verifica se a porta é um número */
     if (!isdigit(*argv[1])){
         printf("[SERVER] A porta deve ser um número");
 		exit(0);
     }
-    printf("[SERVER] Verifica se a porta é um número\n");
 
 	int porta = atoi(argv[1]); 
 	/* Criacao do socket TCP */
@@ -70,19 +74,22 @@ int main(int argc, char *argv[]){
 	/* Receber a mensagem */
 	while(1){		
 		retorno_msg = recv(client, &vetor, VETOR * sizeof(float), 0);
+		/* Para printar o tempo */
+		time ( &rawtime );
+		timeinfo = localtime ( &rawtime );
 		
 		if(retorno_msg == 0 || errno == 104){
-			printf("[SERVER %d] Conexão Encerrada!\n", porta);
+			printf("[SERVER %d | %d:%d:%d ] Conexão Encerrada!\n", porta, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 			close(client);
 			exit(0);
 		}else if (retorno_msg < 0){
-			printf("[SERVER %d] Não foi possivel receber a mensagem", porta);
+			printf("[SERVER %d | %d:%d:%d ] Não foi possivel receber a mensagem", porta, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 		} else{
-			printf("[SERVER %d] Recebida a mensagem\n", porta);
+			printf("[SERVER %d | %d:%d:%d ] Recebida a mensagem\n", porta, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 
 			/* para responder */
 			/* Descobre o menor e maior valor*/
-			for (int i=0; i<VETOR; i++){
+			for (int i=0; i<VETOR-1; i++){
 				if (vetor[i] >= maior){
 					maior = vetor[i];
 				}
@@ -93,9 +100,9 @@ int main(int argc, char *argv[]){
 
 			send_message[0] = menor;
 			send_message[1] = maior;
-
+			printf("[SERVER %d | %d:%d:%d ] Mensagem enviada [%f,%f]\n", porta,timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, send_message[0], send_message[1]);
 			if (send(client, &send_message, VETOR * sizeof(float) + 1, 0) < 0){
-				printf("[SERVER %d] Não foi possivel responder a mensagem", porta);
+				printf("[SERVER %d | %d:%d:%d ] Não foi possivel responder a mensagem", porta, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 			}
 		}
 	}
