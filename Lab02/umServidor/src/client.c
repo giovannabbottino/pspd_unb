@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
 	int client;
 	struct sockaddr_in server_address; /* socket do servidor */
-	float vetor[VETOR], menor = 0, maior = 0, receive_message[2];
+	float vetor[VETOR] = {0}, menor = 0, maior = 0, receive_message[2] = {0};
 
 	/* Cria e descobre o menor e maior valor*/
 	for (int i=0; i<VETOR; i++){

@@ -8,7 +8,7 @@ int main(int argc, char *argv[]){
 	int server, client;
 	socklen_t client_size;
 	float menor = 0, maior = 0, client_number;
-	float vetor[VETOR], send_message[2];
+	float vetor[VETOR] = {0}, send_message[2] = {0};
 
 	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
 

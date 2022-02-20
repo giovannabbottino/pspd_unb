@@ -16,6 +16,5 @@
 #define PORT 5050
 
 #define VETOR 10000
-#define PDU 2000
 
 #endif
