@@ -4,10 +4,6 @@
 */
 #include <properties.h>
 
-int cmpfunc (const void * a, const void * b) {
-   return ( *(float*)a - *(float*)b );
-}
-
 int main(int argc, char *argv[]){
 	int server, client;
 	socklen_t client_size;
