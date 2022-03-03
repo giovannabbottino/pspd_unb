@@ -12,6 +12,9 @@
 #include <errno.h> /* errno */
 #include <math.h> /* sqrt() e pow() */
 
+#include <rabbitmq-c/amqp.h>
+#include <rabbitmq-c/tcp_socket.h>
+
 #define HOST "127.0.0.1"
 
 #define VETOR 100
