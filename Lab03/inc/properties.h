@@ -12,8 +12,8 @@
 #include <errno.h> /* errno */
 #include <math.h> /* sqrt() e pow() */
 
-#include <rabbitmq-c/amqp.h>
-#include <rabbitmq-c/tcp_socket.h>
+#include <amqp.h>
+#include <amqp_tcp_socket.h>
 
 #define VETOR 100
 
