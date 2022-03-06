@@ -15,8 +15,6 @@
 #include <rabbitmq-c/amqp.h>
 #include <rabbitmq-c/tcp_socket.h>
 
-#define HOST "127.0.0.1"
-
 #define VETOR 100
 
 typedef struct mensagem{
