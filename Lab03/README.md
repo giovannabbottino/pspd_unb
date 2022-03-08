@@ -14,6 +14,6 @@ cmake ..
 cmake --build . 
 cd src/ 
 sudo docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.9-management
-./consumer 127.0.0.1 5672 amq.direct lab3 username password  
-./producer 127.0.0.1 5672 amq.direct lab3 username password
+./consumer 127.0.0.1 5672 amq.direct lab3 guest guest  
+./producer 127.0.0.1 5672 amq.direct lab3 guest guest
 ```

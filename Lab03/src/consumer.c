@@ -53,6 +53,7 @@ int main(int argc, char *argv[]){
 	Mensagem * message = encontraValores(receive_message);
 
 	printMensagem(message);
+	printMensagem(receive_message);
 
 	/* Fecha conexao */
 	fecha(conn);
@@ -115,6 +116,7 @@ Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char 
       {
         return;
       }
+	  printf("a = %s", envelope.message.body.bytes);
       Mensagem *result = (Mensagem *)envelope.message.body.bytes;
       amqp_destroy_envelope(&envelope);
       return result;

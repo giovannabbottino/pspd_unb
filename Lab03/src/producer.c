@@ -28,10 +28,7 @@ int main(int argc, char *argv[]) {
 	  exit(0);       
     }
     /* Verifica se a quantidade de servers é um número */
-    if (!isdigit(*argv[2]) || !isdigit(*argv[3])){
-        perror("[CLIENT] Os argumentos devem ser um número");
-		exit(0);
-    }
+ 
 
 	hostname = argv[1];
 	port = atoi(argv[2]);
