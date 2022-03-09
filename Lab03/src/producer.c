@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 	amqp_connection_state_t conn;
 
 	/* Verifica se a quantidade de servers foi enviado pelo argc  */
-    if (argc<6) {
+    if (argc<4) {
 	  perror("[CLIENT] Modo de uso: producer host port exchange routingkey username password");
 	  exit(0);       
     }
@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
 	port = atoi(argv[2]);
 	exchange = argv[3]; 
 	routingkey = argv[4]; 
-	username = argv[5];
-	password = argv[6];
+	username = "guest";
+	password = "guest";
 
 	/* Cria o vetor da atividade */
 	vetor = createVetor(VETOR);
@@ -93,9 +93,9 @@ void fecha(amqp_connection_state_t conn){
 }
 
 void send_batch(amqp_connection_state_t conn, char const *routingkey, char const *exchange, Mensagem *message){
-    amqp_bytes_t message_bytes;
-    message_bytes.len = sizeof(message);
-    message_bytes.bytes = message;
+	amqp_bytes_t message_bytes;
+    message_bytes.len = sizeof(message->vetor);
+    message_bytes.bytes = message->vetor;
 
     die_on_error(amqp_basic_publish(conn, 1, amqp_cstring_bytes(exchange),
                                     amqp_cstring_bytes(routingkey), 0, 0, NULL,
@@ -111,5 +111,5 @@ void printMensagem(Mensagem *mensagem){
     for(int i=0; i<mensagem->tamanho; i++){
         printf("%f\t", mensagem->vetor[i]);
     }
-	printf("]\n");
+	printf("\n");
 }

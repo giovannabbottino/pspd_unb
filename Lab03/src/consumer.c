@@ -4,63 +4,7 @@
 */
 
 #include "utils.h"  /* informacoes para rodar */
-
-amqp_connection_state_t * conecta(char const * hostname, int port, char const * username, char const * password);
-Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char const *bindingkey);
-Mensagem *encontraValores(Mensagem * receive_message);
-void printMensagem(Mensagem *mensagem);
-void fecha(amqp_connection_state_t conn);
-
-int main(int argc, char *argv[]){
-	char const *hostname;
-	int port;
-	char const *exchange;
-  	char const *bindingkey;
-	char const *username;
-  	char const *password;
-	amqp_connection_state_t conn;
-
-	Mensagem * send_messages;
-
-	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
-
-	/* Verifica se a porta foi enviado pelo argc  */
-    if (argc<7) {
-	  printf("[SERVER] Modo de uso: consumer hostname port exchange bindingkey username password\n");
-	  exit(0);       
-    }
-
-    /* Verifica se a porta é um número */
-    if (!isdigit(*argv[2])){
-        printf("[SERVER] A porta deve ser um número");
-		exit(0);
-    }
-
-	hostname = argv[1];
-	port = atoi(argv[2]);
-	exchange = argv[3];  
-	bindingkey =  argv[4];
-	username = argv[5];
-	password = argv[6];
-
-	/* Criacao e conexao do socket TCP */
-	conn = conecta(hostname, port, username, password);
-
-	/* Recebe mensagem */
-	Mensagem * receive_message = receive_batch(conn,exchange,bindingkey); 
-
-	/* Encontra valores do vetor */
-	Mensagem * message = encontraValores(receive_message);
-
-	printMensagem(message);
-	printMensagem(receive_message);
-
-	/* Fecha conexao */
-	fecha(conn);
-
-	return 0;
-}
-
+float maior = 0,menor = 0;
 amqp_connection_state_t * conecta(char const * hostname, int port, char const * username, char const * password){
 	amqp_connection_state_t conn = amqp_new_connection();
 
@@ -83,8 +27,9 @@ amqp_connection_state_t * conecta(char const * hostname, int port, char const * 
 	return conn;
 }
 
-Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char const *bindingkey){
+void receive_batch(amqp_connection_state_t conn,char const *exchange,char const *bindingkey){
   amqp_bytes_t queuename;
+  float float_converter;
   {
     amqp_queue_declare_ok_t *r = amqp_queue_declare(conn, 1, amqp_empty_bytes, 0, 0, 0, 1, amqp_empty_table);
     die_on_amqp_error(amqp_get_rpc_reply(conn), "Declaring queue");
@@ -101,18 +46,24 @@ Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char 
 
   amqp_basic_consume(conn, 1, queuename, amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
   die_on_amqp_error(amqp_get_rpc_reply(conn), "Consuming");
-
   {
-    //for (;;) 
-    //{
       amqp_rpc_reply_t res;
       amqp_envelope_t envelope;
-
+	 
       amqp_maybe_release_buffers(conn);
 
       res = amqp_consume_message(conn, &envelope, NULL, 0);
-
-      if (AMQP_RESPONSE_NORMAL != res.reply_type) 
+	  amqp_message_t message;
+      res = amqp_read_message(conn, NULL, &message, 0);
+	  memcpy(&float_converter, &message.body, sizeof(float_converter));
+	  
+	  if(float_converter>maior){
+		  maior = float_converter;
+	  }else if (float_converter < menor){
+		  menor = float_converter;
+	  }
+	  
+	  if (AMQP_RESPONSE_NORMAL != res.reply_type) 
       {
         return;
       }
@@ -120,44 +71,62 @@ Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char 
       Mensagem *result = (Mensagem *)envelope.message.body.bytes;
       amqp_destroy_envelope(&envelope);
       return result;
-    //}
   }
   amqp_bytes_free(queuename);
 }
 
-Mensagem * encontraValores(Mensagem * receive_message){
-	Mensagem * send_messages = (Mensagem *) malloc(sizeof(Mensagem));
-	send_messages->tamanho = 2;
-	send_messages->vetor =  (float*)malloc ( send_messages->tamanho * sizeof (float));
-	int menor = 0, maior = 0;
-
-	for (int i=0; i<receive_message->tamanho; i++){
-		if (receive_message->vetor[i] >= maior){
-			maior = receive_message->vetor[i];
-		}
-		if (receive_message->vetor[i] <= menor){
-			menor = receive_message->vetor[i];
-		}
-	}
-	send_messages->vetor[0] = menor;
-	send_messages->vetor[1] = menor;
-
-	return send_messages;
-}
-
-void printMensagem(Mensagem *mensagem){ 
-     if (mensagem->tamanho <= 0){ 
-        printf("Mensagem vazia\n"); 
-        return; 
-    } 
-    for(int i=0; i<mensagem->tamanho; i++){ 
-        printf("%f\t", mensagem->vetor[i]); 
-    } 
- printf("]\n"); 
+void printMensagem(){ 
+	printf("maior:%f\tmenor:%f\n", maior,menor);
 }
 
 void fecha(amqp_connection_state_t conn){	
 	die_on_amqp_error(amqp_channel_close(conn, 1, AMQP_REPLY_SUCCESS), "Closing channel");
 	die_on_amqp_error(amqp_connection_close(conn, AMQP_REPLY_SUCCESS), "Closing connection");
 	die_on_error(amqp_destroy_connection(conn), "Ending connection");
+}
+
+int main(int argc, char *argv[]){
+	char const *hostname;
+	int port;
+	char const *exchange;
+  	char const *bindingkey;
+	char const *username;
+  	char const *password;
+	amqp_connection_state_t conn;
+
+	Mensagem * send_messages;
+
+	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
+
+	/* Verifica se a porta foi enviado pelo argc  */
+    if (argc<5) {
+	  printf("[SERVER] Modo de uso: consumer hostname port exchange bindingkey username password\n");
+	  exit(0);       
+    }
+
+    /* Verifica se a porta é um número */
+    if (!isdigit(*argv[2])){
+        printf("[SERVER] A porta deve ser um número");
+		exit(0);
+    }
+
+	hostname = argv[1];
+	port = atoi(argv[2]);
+	exchange = argv[3];  
+	bindingkey =  argv[4];
+	username = "guest";
+	password = "guest";
+
+	/* Criacao e conexao do socket TCP */
+	conn = conecta(hostname, port, username, password);
+
+	/* Recebe mensagem */
+	receive_batch(conn,exchange,bindingkey); 
+	printMensagem();
+
+
+	/* Fecha conexao */
+	fecha(conn);
+
+	return 0;
 }

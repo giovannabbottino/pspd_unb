@@ -14,7 +14,7 @@
 #include <unistd.h>  /* fork()*/
 #include <errno.h> /* errno */
 #include <math.h> /* sqrt() e pow() */
-
+#include <string.h> /* memcpy() */
 #include <rabbitmq-c/amqp.h>
 #include <rabbitmq-c/tcp_socket.h>
 #include <rabbitmq-c/framing.h>
