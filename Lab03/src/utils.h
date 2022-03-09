@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <ctype.h> /* isdigit*/
 #include <math.h> /* sqrt() e pow() */
-
+#include <string.h> /* memcpy() */
 #include <rabbitmq-c/amqp.h>
 #include <rabbitmq-c/tcp_socket.h>
 #include <rabbitmq-c/framing.h>
