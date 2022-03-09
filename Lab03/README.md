@@ -4,6 +4,13 @@
 
 ## Para rodar 
 
+Use o docker para rodar o rabbitmq
+```
+sudo docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.9-management
+```
+
+Assumindo que você não possui rabbitmq-c instalado, entre na pasta Lab03 e siga as instruções a baixo para usar.
+
 ```
 git clone https://github.com/alanxz/rabbitmq-c.git 
 cp src/ -r rabbitmq-c/
@@ -13,7 +20,11 @@ mkdir build && cd build
 cmake .. 
 cmake --build . 
 cd src/ 
-sudo docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.9-management
+```
+
+Rode em terminais diferentes o consumer e a producer.
+
+```
 ./consumer 127.0.0.1 5672 amq.direct lab3 guest guest  
 ./producer 127.0.0.1 5672 amq.direct lab3 guest guest
 ```

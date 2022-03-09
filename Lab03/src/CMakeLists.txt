@@ -8,8 +8,13 @@ target_sources(utils PRIVATE
 
 target_link_libraries(utils PRIVATE rabbitmq::rabbitmq)
 
+add_library(cJSON OBJECT)
+target_sources(cJSON PRIVATE
+  cJSON.h
+  cJSON.c)
+
 add_executable(consumer consumer.c)
-target_link_libraries(consumer PRIVATE utils rabbitmq::rabbitmq)
+target_link_libraries(consumer PRIVATE utils -lm cJSON rabbitmq::rabbitmq)
 
 add_executable(producer producer.c)
-target_link_libraries(producer PRIVATE utils -lm rabbitmq::rabbitmq)
+target_link_libraries(producer PRIVATE utils -lm cJSON rabbitmq::rabbitmq)

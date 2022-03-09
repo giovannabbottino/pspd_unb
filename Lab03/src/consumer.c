@@ -4,37 +4,35 @@
 */
 
 #include "utils.h"  /* informacoes para rodar */
+#include "cJSON.h"
+#include <string.h>
 
 amqp_connection_state_t * conecta(char const * hostname, int port, char const * username, char const * password);
 Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char const *bindingkey);
-Mensagem *encontraValores(Mensagem * receive_message);
-void printMensagem(Mensagem *mensagem);
+Mensagem * createVetorByJSON(char * message);
+void encontraValores(Mensagem * receive_message);
 void fecha(amqp_connection_state_t conn);
 
 int main(int argc, char *argv[]){
 	char const *hostname;
 	int port;
 	char const *exchange;
-  	char const *bindingkey;
+  char const *bindingkey;
 	char const *username;
-  	char const *password;
+  char const *password;
 	amqp_connection_state_t conn;
 
-	Mensagem * send_messages;
-
-	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
-
 	/* Verifica se a porta foi enviado pelo argc  */
-    if (argc<7) {
-	  printf("[SERVER] Modo de uso: consumer hostname port exchange bindingkey username password\n");
+  if (argc<7) {
+	  printf("Modo de uso: consumer hostname port exchange bindingkey username password\n");
 	  exit(0);       
-    }
+  }
 
-    /* Verifica se a porta é um número */
-    if (!isdigit(*argv[2])){
-        printf("[SERVER] A porta deve ser um número");
+  /* Verifica se a porta é um número */
+  if (!isdigit(*argv[2])){
+        printf("A porta deve ser um número");
 		exit(0);
-    }
+  }
 
 	hostname = argv[1];
 	port = atoi(argv[2]);
@@ -47,13 +45,10 @@ int main(int argc, char *argv[]){
 	conn = conecta(hostname, port, username, password);
 
 	/* Recebe mensagem */
-	Mensagem * receive_message = receive_batch(conn,exchange,bindingkey); 
+	Mensagem * receive_message = receive_batch(conn, exchange, bindingkey);
 
-	/* Encontra valores do vetor */
-	Mensagem * message = encontraValores(receive_message);
-
-	printMensagem(message);
-	printMensagem(receive_message);
+  /* acha o menor e maior valor e printa */ 
+  encontraValores(receive_message);
 
 	/* Fecha conexao */
 	fecha(conn);
@@ -84,6 +79,9 @@ amqp_connection_state_t * conecta(char const * hostname, int port, char const * 
 }
 
 Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char const *bindingkey){
+  Mensagem * receive_message;
+  amqp_frame_t frame;
+
   amqp_bytes_t queuename;
   {
     amqp_queue_declare_ok_t *r = amqp_queue_declare(conn, 1, amqp_empty_bytes, 0, 0, 0, 1, amqp_empty_table);
@@ -101,35 +99,48 @@ Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char 
 
   amqp_basic_consume(conn, 1, queuename, amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
   die_on_amqp_error(amqp_get_rpc_reply(conn), "Consuming");
-
   {
-    //for (;;) 
-    //{
-      amqp_rpc_reply_t res;
-      amqp_envelope_t envelope;
+    amqp_rpc_reply_t ret;
+    amqp_envelope_t envelope;
 
-      amqp_maybe_release_buffers(conn);
+    amqp_maybe_release_buffers(conn);
+    ret = amqp_consume_message(conn, &envelope, NULL, 0);
 
-      res = amqp_consume_message(conn, &envelope, NULL, 0);
+    /* gera uma struct apartir do JSON*/
+    receive_message = createVetorByJSON((char *)envelope.message.body.bytes);
 
-      if (AMQP_RESPONSE_NORMAL != res.reply_type) 
-      {
-        return;
-      }
-	  printf("a = %s", envelope.message.body.bytes);
-      Mensagem *result = (Mensagem *)envelope.message.body.bytes;
-      amqp_destroy_envelope(&envelope);
-      return result;
-    //}
+    if (AMQP_RESPONSE_NORMAL != ret.reply_type) {
+      return;
+    }
   }
   amqp_bytes_free(queuename);
+
+  return receive_message;
 }
 
-Mensagem * encontraValores(Mensagem * receive_message){
-	Mensagem * send_messages = (Mensagem *) malloc(sizeof(Mensagem));
-	send_messages->tamanho = 2;
-	send_messages->vetor =  (float*)malloc ( send_messages->tamanho * sizeof (float));
-	int menor = 0, maior = 0;
+Mensagem * createVetorByJSON(char * message){
+  Mensagem * receive_message = (Mensagem *) malloc(sizeof(Mensagem));
+	cJSON * root, * vetor, * tamanho, * item;
+	root = cJSON_Parse(message);
+
+	tamanho = cJSON_GetObjectItem(root, "tamanho");
+
+	vetor = cJSON_GetObjectItem(root, "vetor");
+
+	receive_message->tamanho = tamanho->valueint;
+
+  receive_message->vetor = (float*)malloc(receive_message->tamanho * sizeof (float));
+
+  printf("tamanho %d\n", receive_message->tamanho);
+  for (int i = 0; i<receive_message->tamanho; i++){
+    receive_message->vetor[i] = cJSON_GetArrayItem(vetor, i)->valuedouble;
+  }
+
+  return receive_message;
+}
+
+void encontraValores(Mensagem * receive_message){
+	float menor = 0, maior = 0;
 
 	for (int i=0; i<receive_message->tamanho; i++){
 		if (receive_message->vetor[i] >= maior){
@@ -139,21 +150,7 @@ Mensagem * encontraValores(Mensagem * receive_message){
 			menor = receive_message->vetor[i];
 		}
 	}
-	send_messages->vetor[0] = menor;
-	send_messages->vetor[1] = menor;
-
-	return send_messages;
-}
-
-void printMensagem(Mensagem *mensagem){ 
-     if (mensagem->tamanho <= 0){ 
-        printf("Mensagem vazia\n"); 
-        return; 
-    } 
-    for(int i=0; i<mensagem->tamanho; i++){ 
-        printf("%f\t", mensagem->vetor[i]); 
-    } 
- printf("]\n"); 
+  printf("Menor %f\tMaior %f\n", menor, maior);
 }
 
 void fecha(amqp_connection_state_t conn){	
