@@ -11,7 +11,7 @@
 #include <rabbitmq-c/tcp_socket.h>
 #include <rabbitmq-c/framing.h>
 
-#define VETOR 100
+#define VETOR 1000000000
 
 typedef struct mensagem{
     int tamanho;

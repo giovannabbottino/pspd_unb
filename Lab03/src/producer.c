@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
 	port = atoi(argv[2]);
 	exchange = argv[3]; 
 	routingkey = argv[4]; 
-	username = "guest";
-	password = "guest";
+	username = argv[5];
+	password = argv[6];
 
 	/* Cria o vetor da atividade */
 	vetor = createVetor(VETOR);

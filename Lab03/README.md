@@ -20,7 +20,6 @@ mkdir build && cd build
 cmake .. 
 cmake --build . 
 cd src/ 
-<<<<<<< HEAD
 ```
 
 Rode em terminais diferentes o consumer e a producer.
@@ -28,9 +27,4 @@ Rode em terminais diferentes o consumer e a producer.
 ```
 ./consumer 127.0.0.1 5672 amq.direct lab3 guest guest  
 ./producer 127.0.0.1 5672 amq.direct lab3 guest guest
-=======
-sudo docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.9-management
-./consumer 127.0.0.1 5672 amq.direct lab3 
-./producer 127.0.0.1 5672 amq.direct lab3
->>>>>>> 7113da230fa643c155c725b6a69876783f21c1f9
 ```

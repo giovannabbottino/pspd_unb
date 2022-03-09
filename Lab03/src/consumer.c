@@ -17,9 +17,9 @@ int main(int argc, char *argv[]){
 	char const *hostname;
 	int port;
 	char const *exchange;
-  char const *bindingkey;
+  	char const *bindingkey;
 	char const *username;
-  char const *password;
+  	char const *password;
 	amqp_connection_state_t conn;
 
 	/* Verifica se a porta foi enviado pelo argc  */
@@ -47,8 +47,8 @@ int main(int argc, char *argv[]){
 	/* Recebe mensagem */
 	Mensagem * receive_message = receive_batch(conn, exchange, bindingkey);
 
-  /* acha o menor e maior valor e printa */ 
-  encontraValores(receive_message);
+	/* acha o menor e maior valor e printa */ 
+	encontraValores(receive_message);
 
 	/* Fecha conexao */
 	fecha(conn);
@@ -120,7 +120,7 @@ Mensagem * receive_batch(amqp_connection_state_t conn,char const *exchange,char 
 }
 
 Mensagem * createVetorByJSON(char * message){
-  Mensagem * receive_message = (Mensagem *) malloc(sizeof(Mensagem));
+	Mensagem * receive_message = (Mensagem *) malloc(sizeof(Mensagem));
 	cJSON * root, * vetor, * tamanho, * item;
 	root = cJSON_Parse(message);
 
@@ -130,12 +130,11 @@ Mensagem * createVetorByJSON(char * message){
 
 	receive_message->tamanho = tamanho->valueint;
 
-  receive_message->vetor = (float*)malloc(receive_message->tamanho * sizeof (float));
+	receive_message->vetor = (float*)malloc(receive_message->tamanho * sizeof (float));
 
-  printf("tamanho %d\n", receive_message->tamanho);
-  for (int i = 0; i<receive_message->tamanho; i++){
-    receive_message->vetor[i] = cJSON_GetArrayItem(vetor, i)->valuedouble;
-  }
+	for (int i = 0; i<receive_message->tamanho; i++){
+		receive_message->vetor[i] = cJSON_GetArrayItem(vetor, i)->valuedouble;
+	}
 
   return receive_message;
 }
@@ -158,50 +157,4 @@ void fecha(amqp_connection_state_t conn){
 	die_on_amqp_error(amqp_channel_close(conn, 1, AMQP_REPLY_SUCCESS), "Closing channel");
 	die_on_amqp_error(amqp_connection_close(conn, AMQP_REPLY_SUCCESS), "Closing connection");
 	die_on_error(amqp_destroy_connection(conn), "Ending connection");
-}
-
-int main(int argc, char *argv[]){
-	char const *hostname;
-	int port;
-	char const *exchange;
-  	char const *bindingkey;
-	char const *username;
-  	char const *password;
-	amqp_connection_state_t conn;
-
-	Mensagem * send_messages;
-
-	struct sockaddr_in server_address, client_address; /* socket do servidor e cliente  */
-
-	/* Verifica se a porta foi enviado pelo argc  */
-    if (argc<5) {
-	  printf("[SERVER] Modo de uso: consumer hostname port exchange bindingkey username password\n");
-	  exit(0);       
-    }
-
-    /* Verifica se a porta é um número */
-    if (!isdigit(*argv[2])){
-        printf("[SERVER] A porta deve ser um número");
-		exit(0);
-    }
-
-	hostname = argv[1];
-	port = atoi(argv[2]);
-	exchange = argv[3];  
-	bindingkey =  argv[4];
-	username = "guest";
-	password = "guest";
-
-	/* Criacao e conexao do socket TCP */
-	conn = conecta(hostname, port, username, password);
-
-	/* Recebe mensagem */
-	receive_batch(conn,exchange,bindingkey); 
-	printMensagem();
-
-
-	/* Fecha conexao */
-	fecha(conn);
-
-	return 0;
 }
