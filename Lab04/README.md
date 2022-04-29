@@ -8,28 +8,37 @@ O objetivo deste projeto é permitir que o aluno avance seus conhecimentos sobre
 
 Consiste uma aplicação que utiliza da API Apache Spark Streaming em Single Node Hadoop Deployment (Pseudo-Distributed Mode) e programação usado Python.
 
-- [ ] em um cluster 
-- [ ] envolvendo mais de um host)
-- [ ] consiga ler palavras enviadas a esse servidor à partir de um socket TCP ou UDP
-- [ ] contabilize o total de palavras recebidas pelo socket e o número de ocorrências de cada palavra, durante o tempo de atividade do servidor e
+- [X] em um cluster 
+- [ ] envolvendo mais de um host
+- [ ] consiga ler palavras enviadas a esse servidor à partir de um socket TCP
+- [ ] contabilize o total de palavras recebidas pelo socket e o número de ocorrências de cada palavra, 
+- [ ] durante o tempo de atividade do servidor e
 - [ ] apresente o resultado dessa contabilização em arquivo ou console, de modo que seja possível perceber a dinâmica de leitura/contabilização das entradas.
-- [ ] As palavras devem ser provenientes de um ou mais arquivos, em quanGdade suficiente para que seja 
-possível perceber a streaming de palavras chegando no servidor 
-- [ ] Para  implementação  do  socket  de  leitura  das  palavras,  sugere-se  o  uso  da  biblioteca  Netcat  (hUp://
-netcat.sourceforge.net), mas outras opções como websocket (hUps://pt.wikipedia.org/wiki/WebSocket) 
-também podem ser uGlizadas
+- [ ] As palavras devem ser provenientes de um ou mais arquivos, em quantidade suficiente para que seja possível perceber a streaming de palavras chegando no servidor 
+- [X] Para  implementação  do  socket  de  leitura  das  palavras,  sugere-se  o  uso  da  biblioteca  Netcat  (hUp://netcat.sourceforge.net)
 
 ### Para rodar
 
 Para rodar a parte 1 vai ser necessario ter instalado o Hadoop 3.2.3, Spark 3.2.1 e o Python 3. Supondo que você tenha siga as seguintes instruções, caso contrario vá para a sessão de Tutorial de Instalação.
 
+Use do Netcat para enviar as palavras.
 
 ```
-cd spark-3.2.1-bin-hadoop3.2/
-./bin/spark-submit /Lab04/main.py localhost 9999
-spark-3.2.1-bin-hadoop3.2/bin/spark-submit /mnt/d/repositorios/unb/pspd_unb/Lab04/Parte-1/main.py localhost 9999
+nc -v -lk -p 9999
+``` 
+
+Exporte a variavel LABPATH com o caminho desse diretorio
+```
+export LABPATH=/mnt/d/repositorios/unb/pspd_unb/Lab04
 ```
 
+Execute os seguintes comandos.
+```
+stop-dfs.sh
+start-dfs.sh
+$SPARK_HOME/bin/hadoop dfsadmin -refreshNodes
+$SPARK_HOME/bin/spark-submit $LABPATH/main.py localhost 9999
+```
 ### Tutorial de Instalação  
 
 #### Instale no Ubuntu
@@ -206,7 +215,7 @@ hdfs namenode -format
 ##### Inicie o cluster do Hadoop
 
 ```
-cd hadoop-3.2.3/sbin/
+cd $HADOOP_HOME/sbin/
 ./start-dfs.sh
 jps
 ```
