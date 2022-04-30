@@ -6,16 +6,7 @@ O objetivo deste projeto é permitir que o aluno avance seus conhecimentos sobre
 
 ## Parte 1 - Spark Streaming contabilizando palavras de entrada via socket
 
-Consiste uma aplicação que utiliza da API Apache Spark Streaming em Single Node Hadoop Deployment (Pseudo-Distributed Mode) e programação usado Python.
-
-- [X] em um cluster 
-- [ ] envolvendo mais de um host
-- [ ] consiga ler palavras enviadas a esse servidor à partir de um socket TCP
-- [ ] contabilize o total de palavras recebidas pelo socket e o número de ocorrências de cada palavra, 
-- [ ] durante o tempo de atividade do servidor e
-- [ ] apresente o resultado dessa contabilização em arquivo ou console, de modo que seja possível perceber a dinâmica de leitura/contabilização das entradas.
-- [ ] As palavras devem ser provenientes de um ou mais arquivos, em quantidade suficiente para que seja possível perceber a streaming de palavras chegando no servidor 
-- [X] Para  implementação  do  socket  de  leitura  das  palavras,  sugere-se  o  uso  da  biblioteca  Netcat  (hUp://netcat.sourceforge.net)
+Consiste uma aplicação que utiliza da API Apache Spark Streaming com 2 threads de trabalho em Single Node Hadoop Deployment e programação usado Python. Essa aplicação consegue ler palavras enviadas a partir de um socket TCP e apresenta o resultado dessa contabilização no console.
 
 ### Para rodar
 
@@ -27,17 +18,14 @@ Use do Netcat para enviar as palavras.
 nc -v -lk -p 9999
 ``` 
 
-Exporte a variavel LABPATH com o caminho desse diretorio
+Exporte a variavel LABPATH com o caminho do seu diretorio
 ```
-export LABPATH=/mnt/d/repositorios/unb/pspd_unb/Lab04
+export LABPATH=/home/giovanna/unb/pspd_unb/Lab04
 ```
 
 Execute os seguintes comandos.
 ```
-stop-dfs.sh
-start-dfs.sh
-$SPARK_HOME/bin/hadoop dfsadmin -refreshNodes
-$SPARK_HOME/bin/spark-submit $LABPATH/main.py localhost 9999
+$SPARK_HOME/bin/spark-submit --master local[2] $LABPATH/main.py --hostname localhost --port 9999
 ```
 ### Tutorial de Instalação  
 
@@ -215,8 +203,7 @@ hdfs namenode -format
 ##### Inicie o cluster do Hadoop
 
 ```
-cd $HADOOP_HOME/sbin/
-./start-dfs.sh
+$HADOOP_HOME/sbin/start-dfs.sh
 jps
 ```
 

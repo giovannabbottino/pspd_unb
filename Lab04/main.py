@@ -1,24 +1,47 @@
-from __future__ import print_function
-
 import sys
+import argparse
 
-from pyspark import SparkContext
-from pyspark.streaming import StreamingContext
+parser = argparse.ArgumentParser()
+parser.add_argument("--hostname", help="hostname")
+parser.add_argument("--port", help="port")
+args = parser.parse_args()
+if not args.hostname or not args.port:
+    print("Usage: main.py --hostname <hostname> --port <port>", file=sys.stderr)
+    exit(0)
 
-if __name__ == "__main__": 
-    print(sys.argv)
-    if len(sys.argv) < 3:
-        print("Usage: main.py <hostname> <port>", file=sys.stderr)
-        exit(0)
-    sc = SparkContext("local[2]", "NetworkWordCount")
-    ssc = StreamingContext(sc, 1)
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import split, explode, col
 
-    lines = ssc.socketTextStream("localhost", 9999)
+spark = SparkSession \
+    .builder \
+    .appName("StructuredNetworkWordCount") \
+    .getOrCreate()
 
-    words = lines.flatMap(lambda line: line.split(" "))
-    counts = words.map(lambda word: (word, 1))\
-                  .reduceByKey(lambda a, b: a+b)
-    counts.pprint()
+spark.sparkContext.setLogLevel("WARN")
 
-    ssc.start()
-    ssc.awaitTermination()
+# Create DataFrame representing the stream of input lines from connection to localhost:9999
+lines = spark \
+    .readStream \
+    .format("socket") \
+    .option("host", args.hostname) \
+    .option("port", args.port) \
+    .load()
+
+# Split the lines into words
+words = lines.select(
+   explode(
+       split(lines.value, " ")
+   ).alias("word")
+)
+
+# Generate running word count
+wordCounts = words.groupBy("word").count()
+
+# Start running the query that prints the running counts to the console
+query = wordCounts \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
+query.awaitTermination()
