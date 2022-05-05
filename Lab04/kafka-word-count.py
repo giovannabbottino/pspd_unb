@@ -61,13 +61,15 @@ for i in range(1, len(streams)):
 Em seguida, usamos duas funções SQL embutidas - split e explode, para dividir cada linha em várias linhas com uma palavra cada. 
 Além disso, usamos o alias da função para nomear a nova coluna como "word”. 
 """
-from pyspark.sql.functions import split, explode
+from pyspark.sql.functions import split, explode, lower, col
 
 words = lines.select(
    explode(
-       split(lines.value, " ")
+        split(lines.value, " ")
    ).alias("word")
 )
+
+words = words.withColumn("word",lower(col("word")))
 
 """
 Por fim, definimos o WordCounts DataFrame agrupando pelos valores únicos no Dataset e contando-os. 
@@ -96,23 +98,21 @@ count = schema \
     .start()
 
 
+from pyspark.sql.functions import  length
 
-
-from pyspark.sql.functions import lower, col, length
-
-p = words.filter(lower(col("word").substr(1, 1)) == "p").groupBy().count().selectExpr("cast (count as string) p")
+p = words.filter(col("word").substr(1, 1) == "p").groupBy().count().selectExpr("cast (count as string) p")
 count_p = p \
     .writeStream \
     .outputMode("complete") \
     .format("console") \
     .start()
-s = words.filter(lower(col("word").substr(1, 1)) == "s").groupBy().count().selectExpr("cast (count as string) s")
+s = words.filter(col("word").substr(1, 1) == "s").groupBy().count().selectExpr("cast (count as string) s")
 count_s = s \
     .writeStream \
     .outputMode("complete") \
     .format("console") \
     .start()
-r = words.filter(lower(col("word").substr(1, 1)) == "r").groupBy().count().selectExpr("cast (count as string) r")
+r = words.filter(col("word").substr(1, 1) == "r").groupBy().count().selectExpr("cast (count as string) r")
 count_r = r \
     .writeStream \
     .outputMode("complete") \
