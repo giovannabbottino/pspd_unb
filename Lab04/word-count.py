@@ -2,17 +2,16 @@ import sys
 import argparse
 
 """
-Recebe o hostname e a port como argumento
+Recebe o hosts como argumento
 """
 parser = argparse.ArgumentParser()
-parser.add_argument("--hostname", help="hostname")
-parser.add_argument("--port", help="port")
+parser.add_argument("--hosts", help="hostname")
 args = parser.parse_args()
 """
-Confere se o hostname e a port foi enviado como argumento
+Confere se o hosts foi enviado como argumento
 """
-if not args.hostname or not args.port:
-    print("Usage: main.py --hostname <hostname> --port <port>", file=sys.stderr)
+if not args.hosts:
+    print("Usage: main.py --hosts <host1:port1,host2:port2,...>", file=sys.stderr)
     exit(0)
 
 """
@@ -41,12 +40,18 @@ Esta linha DataFrame representa uma tabela ilimitada contendo os dados de texto 
 Essa tabela contém uma coluna de strings denominada "valor” e cada linha nos dados de texto de streaming se torna uma linha na tabela. 
 Observe que isso não está recebendo nenhum dado no momento, pois estamos apenas configurando a transformação e ainda não a iniciamos. 
 """
-lines = spark \
-    .readStream \
-    .format("socket") \
-    .option("host", args.hostname) \
-    .option("port", args.port) \
-    .load()
+
+list_host = args.hosts.split(",")
+list_host = [item.split(":") for item in list_host]
+streams = [spark.readStream \
+        .format("socket") \
+        .option("host", value[0]) \
+        .option("port", int(value[1])) \
+        .load() for value in list_host]
+
+lines = streams[0]
+for i in range(1, len(streams)):
+    lines = lines.union(streams[i])
 
 """
 Em seguida, usamos duas funções SQL embutidas - split e explode, para dividir cada linha em várias linhas com uma palavra cada. 
