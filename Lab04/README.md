@@ -53,11 +53,7 @@ Para rodar a parte 2 vai ser necessario ter instalado o Kafta 3.1.0 ou maior. Su
 Execute os seguintes comandos.
 
 ```
-$SPARK_HOME/bin/spark-submit /
---packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 /
-$LABPATH/kafka-word-count.py /
---hosts localhost:9092 /
---topics word-count-events
+$SPARK_HOME/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.1 $LABPATH/kafka-word-count.py --hosts localhost:9092 --topics word-count-events
 ```
 
 ## Tutorial de Instalação  
@@ -71,7 +67,7 @@ java -version; javac -version
 sudo apt install openssh-server openssh-client -y
 ```
 
-### Crie um usuário para o ambiete
+### Crie um usuário para o ambiente
 ```
 sudo adduser pspd
 su - pspd
