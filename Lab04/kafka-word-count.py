@@ -75,6 +75,8 @@ Observe que este é um DataFrame de streaming que representa as contagens de pal
 """
 wordCounts = words.groupBy("word").count()
 
+schema = (words.groupBy().count()).selectExpr("cast (count as string) total")
+
 """
 Agora configuramos a consulta nos dados de streaming. 
 Tudo o que resta é realmente começar a receber dados e calcular as contagens. 
@@ -87,9 +89,66 @@ query = wordCounts \
     .format("console") \
     .start()
 
+count = schema \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
+
+
+
+from pyspark.sql.functions import lower, col, length
+
+p = words.filter(lower(col("word").substr(1, 1)) == "p").groupBy().count().selectExpr("cast (count as string) p")
+count_p = p \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+s = words.filter(lower(col("word").substr(1, 1)) == "s").groupBy().count().selectExpr("cast (count as string) s")
+count_s = s \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+r = words.filter(lower(col("word").substr(1, 1)) == "r").groupBy().count().selectExpr("cast (count as string) r")
+count_r = r \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+p_6 =  words.filter(length("word") == 6).groupBy().count().selectExpr("cast (count as string) p6")
+count_p_6 = p_6 \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+p_8 =  words.filter(length("word") == 8).groupBy().count().selectExpr("cast (count as string) p8")
+count_p_8 = p_8 \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+p_11 =  words.filter(length("word") == 11).groupBy().count().selectExpr("cast (count as string) p11")
+count_p_11 = p_11 \
+    .writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
 """
 Depois que esse código for executado, a computação de streaming será iniciada em segundo plano.
 O objeto de consulta é um identificador para essa consulta de streaming ativa e decidimos aguardar o término da consulta usando awaitTermination()
 para evitar que o processo seja encerrado enquanto a consulta estiver ativa.
 """
 query.awaitTermination()
+
+count.awaitTermination()
+
+count_p.awaitTermination()
+count_s.awaitTermination()
+count_r.awaitTermination()
+count_p_6.awaitTermination()
+count_p_8.awaitTermination()
+count_p_11.awaitTermination()
